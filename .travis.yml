@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t tarminder/react-test - f ./client/Dockerfile.dev ./client
+
+
+script:
+  - docker run tarminder/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t tarminder/multi-client ./client
+  - docker build -t tarminder/multi-nginx ./nginx
+  - docker build -t tarminder/multi-server ./server
+  - docker build -t tarminder/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u  "$DOCKER_ID" --password-stdin
+
+
+  - docker push tarminder/multi-client
+  - docker push tarminder/multi-nginx
+  - docker push tarminder/multi-server
+  - docker push tarminder/multi-worker
+
